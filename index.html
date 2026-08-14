@@ -1,0 +1,142 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signature Lab｜个性签名生成器</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Signature Lab</p>
+          <h1>生成只属于你的个性签名</h1>
+          <p class="hero-text">回答几个问题，结合语言、MBTI、个人气质、隐藏名字和哲学灵感，生成适合社交主页的个性签名。</p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#generator">开始生成</a>
+            <button class="ghost-button" id="fillDemo">试用示例</button>
+          </div>
+        </div>
+        <div class="signature-preview" aria-label="签名示例">
+          <span>INFP · 中文 · 隐藏名字</span>
+          <strong>月亮不替谁发声，我在沉默里成为自己。</strong>
+          <small>灵感来自：尼采“成为你自己”相关思想</small>
+        </div>
+      </section>
+
+      <section class="panel form-panel" id="generator">
+        <div class="section-heading">
+          <p class="eyebrow">Questions</p>
+          <h2>告诉我你想要怎样的签名</h2>
+          <p>所有选项都可调整；如果不确定，可以直接保留默认。</p>
+        </div>
+
+        <form id="signatureForm" class="question-grid">
+          <label class="field-card">
+            <span>签名语言</span>
+            <select name="language">
+              <option value="中文">中文</option>
+              <option value="English">English</option>
+              <option value="中英混合">中英混合</option>
+              <option value="日文氛围">日文氛围</option>
+              <option value="古风中文">古风中文</option>
+            </select>
+          </label>
+
+          <label class="field-card">
+            <span>你的 MBTI</span>
+            <select name="mbti">
+              <option value="INFP">INFP 调停者</option>
+              <option value="INFJ">INFJ 提倡者</option>
+              <option value="INTJ">INTJ 建筑师</option>
+              <option value="INTP">INTP 逻辑学家</option>
+              <option value="ENFP">ENFP 竞选者</option>
+              <option value="ENTJ">ENTJ 指挥官</option>
+              <option value="ISFP">ISFP 探险家</option>
+              <option value="ISTP">ISTP 鉴赏家</option>
+              <option value="未知">不知道 / 跳过</option>
+            </select>
+          </label>
+
+          <fieldset class="field-card full-width">
+            <legend>签名偏向</legend>
+            <div class="chips">
+              <label><input type="radio" name="purpose" value="展示个人性格" checked />展示个人性格</label>
+              <label><input type="radio" name="purpose" value="隐藏一个名字" />隐藏一个名字</label>
+              <label><input type="radio" name="purpose" value="表达当下心情" />表达当下心情</label>
+              <label><input type="radio" name="purpose" value="社交主页简介" />社交主页简介</label>
+            </div>
+          </fieldset>
+
+          <label class="field-card">
+            <span>整体气质</span>
+            <select name="tone">
+              <option value="温柔清醒">温柔清醒</option>
+              <option value="高冷神秘">高冷神秘</option>
+              <option value="浪漫自由">浪漫自由</option>
+              <option value="理性锋利">理性锋利</option>
+              <option value="古典诗意">古典诗意</option>
+              <option value="可爱松弛">可爱松弛</option>
+            </select>
+          </label>
+
+          <label class="field-card">
+            <span>隐藏名字</span>
+            <input name="hiddenName" maxlength="16" placeholder="例如：林月 / Luna / M" />
+          </label>
+
+          <label class="field-card">
+            <span>隐藏方式</span>
+            <select name="hideMethod">
+              <option value="藏头">藏头</option>
+              <option value="首字母">首字母</option>
+              <option value="谐音">谐音</option>
+              <option value="意象暗示">意象暗示</option>
+            </select>
+          </label>
+
+          <label class="field-card">
+            <span>哲学名句参考</span>
+            <select name="philosophyLevel">
+              <option value="轻微参考">轻微参考</option>
+              <option value="明显引用">明显引用</option>
+              <option value="改写成个签">改写成个签</option>
+              <option value="不需要">不需要</option>
+            </select>
+          </label>
+
+          <label class="field-card full-width">
+            <span>喜欢的关键词</span>
+            <input name="keywords" placeholder="例如：月亮、自由、孤独、热爱、重生" />
+          </label>
+
+          <div class="form-actions full-width">
+            <button class="primary-button" type="submit">生成签名</button>
+            <button class="secondary-button" type="reset">重置</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel result-panel" aria-live="polite">
+        <div class="section-heading compact">
+          <p class="eyebrow">Results</p>
+          <h2>你的签名方案</h2>
+          <p>点击卡片右上角可复制；哲学引用会标注出处。</p>
+        </div>
+        <div id="results" class="result-grid"></div>
+      </section>
+    </main>
+
+    <template id="resultTemplate">
+      <article class="result-card">
+        <button class="copy-button" type="button">复制</button>
+        <div class="tags"></div>
+        <p class="signature"></p>
+        <div class="meta"></div>
+      </article>
+    </template>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
