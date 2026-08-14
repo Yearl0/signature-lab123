@@ -258,77 +258,104 @@ function isChineseSignatureLanguage(language) {
   return ["中文", "古风中文", "中英混合"].includes(language);
 }
 
-function isAcrosticMethod(method) {
-  return String(method).includes("藏头");
+function isInlineHideMethod(method) {
+  return String(method).includes("句中藏字");
 }
 
-function shouldUseChineseInitialAcrostic(name, method, language) {
-  return isLatinName(name) && isChineseSignatureLanguage(language) && isAcrosticMethod(method);
-}
-
-function chineseLineForInitial(char, mbtiStyle, index) {
-  const initial = char.toUpperCase();
-  const motif = pick(mbtiStyle.motifs, index);
-  const firstCharMap = {
+function pinyinInitialChar(initial) {
+  const map = {
     A: "安", B: "不", C: "藏", D: "灯", E: "而", F: "风", G: "光", H: "花", I: "一", J: "旧", K: "空", L: "林", M: "明", N: "南", O: "偶", P: "偏", Q: "清", R: "若", S: "深", T: "停", U: "雾", V: "微", W: "晚", X: "星", Y: "月", Z: "在",
   };
-  const starters = {
-    A: ["安静处仍有回声", `暗处也留着${motif}`],
-    B: ["不必把答案说尽", `半醒之间藏着${motif}`],
-    C: [`藏起${motif}，也藏起月光`, "春色未深，心事已远"],
-    D: [`灯影落下，${motif}自明`, "等风经过，不问归处"],
-    E: [`而${motif}自有重量`, "而月色仍旧偏冷"],
-    F: ["风经过时不解释", `浮光停在${motif}旁`],
-    G: [`光落下来，${motif}不作声`, "孤星不问人间"],
-    H: [`花影不语，${motif}自明`, `海雾深处，${motif}有微光`],
-    I: [`一念未明，${motif}正深`, "一场静默，抵过千言"],
-    J: [`旧梦不醒，${motif}很轻`, "镜中月色，仍有余温"],
-    K: [`空山无答，${motif}有声`, "看见月光，也看见沉默"],
-    L: [`林深处，${motif}仍未命名`, `落月无声，照见${motif}`],
-    M: [`明月不问${motif}`, "梦醒时分，风仍很轻"],
-    N: [`南风不语，${motif}成谜`, "念起无声，月色微凉"],
-    O: [`偶有${motif}，落在暗处`, "偶然沉默，也像回答"],
-    P: [`偏有${motif}，不肯落俗`, "旁人不解，风自分明"],
-    Q: [`清醒藏在${motif}之后`, "青山不语，远意自来"],
-    R: [`若有回声，必在${motif}深处`, "人间很静，暗处有光"],
-    S: [`深处未必黑，${motif}仍亮`, "山色不言，心事自远"],
-    T: [`停在${motif}里，也算自由`, "天光未亮，答案未醒"],
-    U: [`雾里有${motif}，未必需名`, "无声处，自有回响"],
-    V: [`微光不语，仍照${motif}`, "微雨过后，夜色更深"],
-    W: [`晚风无意，却懂${motif}`, "雾散之前，不必说明"],
-    X: [`星河低垂，${motif}不醒`, "心事无声，月色有痕"],
-    Y: [`月亮不属于${motif}`, "远山不语，答案未明"],
-    Z: [`在${motif}里，答案不必说尽`, "坠入月光，也坠入沉默"],
-  };
-  return pick(starters[initial] || [`${firstCharMap[initial] || initial}藏在未说尽的地方`], index);
+  return map[initial.toUpperCase()] || initial;
 }
 
-function buildChineseInitialAcrostic(chars, index, mbtiStyle) {
-  return chars.map((char, charIndex) => chineseLineForInitial(char, mbtiStyle, index + charIndex)).join("；");
+function resolveHiddenChars(name, language) {
+  const sourceChars = [...cleanHiddenName(name)];
+  const latin = isLatinName(name);
+  const usePinyinChars = latin && isChineseSignatureLanguage(language);
+  return {
+    sourceChars,
+    hiddenChars: usePinyinChars ? sourceChars.map(pinyinInitialChar) : sourceChars,
+    usePinyinChars,
+    latin,
+  };
+}
+
+function chineseInlineFragment(char, mbtiStyle, index) {
+  const motif = pick(mbtiStyle.motifs, index);
+  const fragments = {
+    安: [`安静处留着${motif}`, `暗处有${motif}微亮`],
+    不: [`不必把${motif}说尽`, `不动声色地靠近${motif}`],
+    藏: [`藏起${motif}的边缘`, `${motif}藏在转角处`],
+    灯: [`灯影落进${motif}`, `灯下的${motif}仍旧安静`],
+    而: [`而${motif}仍有回声`, `而答案停在${motif}旁`],
+    风: [`风经过${motif}`, `${motif}被风轻轻带过`],
+    光: [`光落在${motif}上`, `${motif}里仍有微光`],
+    花: [`花影越过${motif}`, `${motif}旁有花影停留`],
+    一: [`一念停在${motif}里`, `一场静默靠近${motif}`],
+    旧: [`旧梦贴近${motif}`, `${motif}收着旧梦`],
+    空: [`空白围住${motif}`, `${motif}在空处回响`],
+    林: [`林深处仍有${motif}`, `${motif}落进林间`],
+    明: [`明月照见${motif}`, `${motif}在明处沉默`],
+    南: [`南风把${motif}吹远`, `${motif}随南风转身`],
+    偶: [`偶有${motif}落在暗处`, `${motif}偶然经过`],
+    偏: [`偏有${motif}不肯落俗`, `${motif}偏向无人处`],
+    清: [`清醒藏在${motif}之后`, `${motif}让夜色更清`],
+    若: [`若有回声，必在${motif}深处`, `${motif}若隐若现`],
+    深: [`深处未必黑，${motif}仍亮`, `${motif}向更深处去`],
+    停: [`停在${motif}里，也算自由`, `${motif}停在半明半暗处`],
+    雾: [`雾里有${motif}，未必需名`, `${motif}被雾轻轻收住`],
+    微: [`微光不语，仍照${motif}`, `${motif}微微发亮`],
+    晚: [`晚风无意，却懂${motif}`, `${motif}落进晚风`],
+    星: [`星河低垂，${motif}不醒`, `${motif}旁有星光停留`],
+    月: [`月色停在${motif}旁`, `月光停在${motif}旁`],
+    在: [`答案停在${motif}里`, `在${motif}里，答案不必说尽`],
+    林原名: [`风过林间`, `林深处仍有回声`],
+    月原名: [`月色停在未命名处`, `月光不肯说明答案`],
+  };
+  return pick(fragments[char] || [`${char}被藏进${motif}旁`, `${motif}轻轻经过${char}`], index);
+}
+
+function englishInitialWord(char) {
+  const words = {
+    A: "always", B: "beneath", C: "quietly chasing", D: "distant", E: "echoes", F: "finding", G: "gentle", H: "hidden", I: "inside", J: "journeying", K: "keeping", L: "light", M: "moonlit", N: "night", O: "open", P: "paths", Q: "quiet", R: "rising", S: "softly", T: "toward", U: "unknown", V: "velvet", W: "wild", X: "xanadu", Y: "young", Z: "zephyrs",
+  };
+  return words[char.toUpperCase()] || char;
+}
+
+function buildEnglishInlineHiddenSignature(hiddenChars, mbtiStyle, index) {
+  const words = hiddenChars.map(englishInitialWord);
+  const tail = pick(mbtiStyle.english, index).replace(/[.!?]$/, "").toLowerCase();
+  return `${words.join(" ")} where ${tail}.`;
+}
+
+function buildInlineHiddenSignature({ hiddenChars, language, mbtiStyle, index }) {
+  if (language === "English") {
+    return buildEnglishInlineHiddenSignature(hiddenChars, mbtiStyle, index);
+  }
+
+  if (language === "日文氛围") {
+    const base = pick(mbtiStyle.japanese, index).replace(/[。.!?]$/, "");
+    return `${base}。${hiddenChars.join("、")}は静かに隠れている。`;
+  }
+
+  const fragments = hiddenChars.map((char, charIndex) => chineseInlineFragment(char, mbtiStyle, index + charIndex));
+  const ending = pick(["仍不肯把答案说尽。", "最后只剩一点未说明的光。", "像谜一样停在句子里。"], index);
+  return polishSignature(`${fragments.join("，")}，${ending}`);
 }
 
 function buildHiddenLine(name, method, tone, index, language, mbtiStyle) {
   if (!name) return null;
-  const chars = [...cleanHiddenName(name)];
-  const latin = isLatinName(name);
+  const resolved = resolveHiddenChars(name, language);
 
-  if (shouldUseChineseInitialAcrostic(name, method, language)) {
-    return buildChineseInitialAcrostic(chars, index, mbtiStyle);
-  }
-
-  if (isAcrosticMethod(method) && !latin) {
-    const suffixes = mbtiStyle.chinese.map((line) => line.replace(/^[^，。；]+[，。；]?/, "")).filter(Boolean);
-    return chars.map((char, charIndex) => `${char}${pick(suffixes.length ? suffixes : tonePhrases[tone] || tonePhrases.含蓄留白, index + charIndex)}`).join("，");
-  }
-
-  if (method === "首字母" || latin) {
-    const words = {
-      A: "Always", B: "Bravely", C: "Chasing", D: "Distant", E: "Echoes", F: "Finding", G: "Gentle", H: "Horizons",
-      I: "Inside", J: "Journey", K: "Keeping", L: "Light", M: "Moonlit", N: "Nights", O: "Open", P: "Paths",
-      Q: "Quiet", R: "Rising", S: "Softly", T: "Toward", U: "Unknown", V: "Velvet", W: "Wild", X: "Xanadu",
-      Y: "Young", Z: "Zephyrs",
-    };
-    return chars.map((char) => words[char.toUpperCase()] || char).join(" · ") + ".";
+  if (isInlineHideMethod(method)) {
+    return buildInlineHiddenSignature({
+      hiddenChars: resolved.hiddenChars,
+      language,
+      mbtiStyle,
+      tone,
+      index,
+    });
   }
 
   if (method === "谐音") return `把“${name}”藏进${pick(mbtiStyle.motifs, index)}里，只让懂的人听见。`;
@@ -337,20 +364,18 @@ function buildHiddenLine(name, method, tone, index, language, mbtiStyle) {
 
 function buildHiddenExplanation(data, text) {
   if (!data.hiddenName) return "签名解释：没有设置隐藏名字。";
-  const chars = [...cleanHiddenName(data.hiddenName)];
-  const latin = isLatinName(data.hiddenName);
+  const resolved = resolveHiddenChars(data.hiddenName, data.language);
 
-  if (shouldUseChineseInitialAcrostic(data.hiddenName, data.hideMethod, data.language)) {
-    const firstChars = text.split("；").map((part) => part.trim().charAt(0)).filter(Boolean);
-    return `签名解释：这是中文藏头。每个分句开头汉字为${firstChars.map((char) => `「${char}」`).join("、")}，它们的拼音首字母依次是 ${chars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
-  }
+  if (isInlineHideMethod(data.hideMethod)) {
+    if (resolved.usePinyinChars) {
+      return `签名解释：句中依次藏入${resolved.hiddenChars.map((char) => `「${char}」`).join("、")}，它们的拼音首字母对应 ${resolved.sourceChars.map((char) => char.toUpperCase()).join("-")}。`;
+    }
 
-  if (isAcrosticMethod(data.hideMethod) && !latin) {
-    return `签名解释：每个分句开头依次是${chars.map((char) => `「${char}」`).join("、")}，连起来就是「${data.hiddenName}」。`;
-  }
+    if (data.language === "English" && resolved.latin) {
+      return `签名解释：英文词首字母依次是 ${resolved.sourceChars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
+    }
 
-  if (data.hideMethod === "首字母" || latin) {
-    return `签名解释：英文词首字母依次是 ${chars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
+    return `签名解释：句中依次藏入${resolved.hiddenChars.map((char) => `「${char}」`).join("、")}，连起来就是「${data.hiddenName}」。`;
   }
 
   if (data.hideMethod === "谐音") {
@@ -554,12 +579,15 @@ fillDemo.addEventListener("click", () => {
   form.purpose.value = "隐藏一个名字";
   form.tone.value = "含蓄留白";
   form.hiddenName.value = "林月";
-  form.hideMethod.value = "藏头";
+  form.hideMethod.value = "句中藏字";
   form.philosophyLevel.value = "轻微参考";
   form.keywords.value = "月亮, 自知, 孤独";
   form.requestSubmit();
 });
 
 renderEmptyState();
+
+
+
 
 
