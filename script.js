@@ -30,20 +30,53 @@ const mbtiProfiles = {
 };
 
 const wordBank = {
-  中文: ["我不急着被理解，风会替我解释。", "温柔不是退让，是我选择不锋利。", "把答案留给时间，把光留给自己。", "我在沉默里生长，也在清醒里自由。"],
-  English: ["Not distant, just selective.", "Quietly becoming what I once needed.", "Soft heart, sharp boundaries.", "I bloom where silence understands me."],
-  中英混合: ["半分清醒，half romantic.", "Born quiet, living loud.", "人间很吵，我自成宇宙。", "Stay soft, 但别失去边界。"],
-  日文氛围: ["月が静かな夜、わたしは少し自由になる。", "やさしさを残して、遠くへ行く。", "風の中で、まだ自分を探している。", "静けさの奥に、光を隠している。"],
-  古风中文: ["不问归期，且听风起。", "心有明月，不染尘声。", "山河不语，我自成章。", "一身清醒，半袖月光。"],
+  中文: [
+    "温柔不是没有棱角，只是不把锋利给所有人看。",
+    "不讨好热闹，也不辜负安静。",
+    "把情绪交给夜晚，把清醒留给明天。",
+    "月亮不属于夜晚。",
+    "深渊不一定黑，也可能藏着星光。",
+    "未经审视的热爱，也值得重新选择。",
+    "存在不是答案，是每天做出的选择。",
+    "有些沉默不是空白，是语言抵达不了的地方。",
+  ],
+  English: [
+    "Soft edges, quiet boundaries.",
+    "Not every silence is empty.",
+    "Some moons refuse to belong.",
+    "The answer stays unnamed.",
+    "A little distant, never absent.",
+    "Meaning arrives without announcement.",
+  ],
+  中英混合: [
+    "温柔有棱角，silence has meaning.",
+    "月亮不归夜晚，answer unnamed.",
+    "不讨好热闹，still softly awake.",
+    "深渊未必黑，stars remain quiet.",
+  ],
+  日文氛围: [
+    "沈黙にも、まだ余白がある。",
+    "月は夜だけのものじゃない。",
+    "やさしさの奥に、少しだけ棘。",
+    "答えはまだ、名前を持たない。",
+  ],
+  古风中文: [
+    "不问归期，且听风起。",
+    "心有明月，不染尘声。",
+    "山河不语，夜色自明。",
+    "一半清醒，一半月光。",
+    "风过无痕，灯下有谜。",
+  ],
 };
 
 const tonePhrases = {
-  温柔清醒: ["温柔有边界", "清醒不冷漠", "把光留给自己"],
-  高冷神秘: ["不解释", "深渊与月", "靠近之前先懂沉默"],
-  浪漫自由: ["风、月亮和远方", "热烈地逃向自己", "自由比答案重要"],
-  理性锋利: ["边界清楚", "选择比讨好重要", "冷静地成为"],
+  含蓄留白: ["不说尽", "半明半暗", "让答案停在雾里"],
+  温柔清醒: ["温柔有棱角", "清醒有余温", "把锋利收进袖口"],
+  高冷神秘: ["深渊与星光", "沉默有回声", "靠近也隔着月色"],
+  浪漫自由: ["月亮不归夜晚", "风经过时不解释", "远方留着空白"],
+  理性锋利: ["边界清楚", "判断安静", "锋利不外露"],
   古典诗意: ["山河、明月、故梦", "不问归期", "心事落在风里"],
-  可爱松弛: ["今天也慢慢发光", "不赶路也会抵达", "把烦恼放进云里"],
+  可爱松弛: ["慢慢发光", "不赶路也会抵达", "把烦恼放进云里"],
 };
 
 const form = document.querySelector("#signatureForm");
@@ -96,7 +129,7 @@ function buildHiddenLine(name, method, tone, index) {
   }
 
   if (method === "谐音") return `把“${name}”藏进风声里，只让懂的人听见。`;
-  return `以${pick(tonePhrases[tone] || tonePhrases.温柔清醒, index)}暗示“${name}”。`;
+  return `以${pick(tonePhrases[tone] || tonePhrases.含蓄留白, index)}暗示“${name}”。`;
 }
 
 function buildHiddenExplanation(data, text) {
@@ -119,32 +152,49 @@ function buildHiddenExplanation(data, text) {
   return `签名解释：用「${text}」里的气质和意象暗示「${data.hiddenName}」，适合更隐晦的隐藏方式。`;
 }
 
+function polishSignature(text) {
+  return text
+    .replace(/我把/g, "把")
+    .replace(/我在/g, "在")
+    .replace(/我不/g, "不")
+    .replace(/我也/g, "也")
+    .replace(/我/g, "")
+    .replace(/，，/g, "，")
+    .replace(/^，/, "")
+    .trim();
+}
+
 function adaptSignature(base, data, philosophy, index) {
   const mbtiTraits = mbtiProfiles[data.mbti] || mbtiProfiles.未知;
   const trait = pick(mbtiTraits, index);
-  const tonePhrase = pick(tonePhrases[data.tone] || tonePhrases.温柔清醒, index);
-  const keyword = pick(data.keywords.length ? data.keywords : ["自己", "月亮", "自由"], index);
+  const tonePhrase = pick(tonePhrases[data.tone] || tonePhrases.含蓄留白, index);
+  const keyword = pick(data.keywords.length ? data.keywords : ["月亮", "沉默", "答案"], index);
 
   if (data.philosophyLevel === "明显引用") {
-    return `${base} ${data.language === "English" ? "—" : "｜"} ${philosophy.quote}`;
+    return polishSignature(`${base} ${data.language === "English" ? "—" : "｜"} ${philosophy.quote}`);
   }
 
   if (data.philosophyLevel === "改写成个签") {
-    if (data.language === "English") return `Becoming myself, with ${keyword} as proof.`;
-    if (data.language === "中英混合") return `我正在成为自己，with ${keyword} as proof.`;
-    return `我把${keyword}写进日常，也把自己活成答案。`;
+    if (data.language === "English") return `A quiet choice, with ${keyword} left unnamed.`;
+    if (data.language === "中英混合") return `${keyword}不必命名，meaning stays quiet.`;
+    return polishSignature(`${keyword}不必命名，答案也不必说尽。`);
   }
 
   if (data.purpose === "隐藏一个名字" && data.hiddenName) {
-    return buildHiddenLine(data.hiddenName, data.hideMethod, data.tone, index) || base;
+    return polishSignature(buildHiddenLine(data.hiddenName, data.hideMethod, data.tone, index) || base);
   }
 
   if (data.purpose === "展示个人性格") {
-    if (data.language === "English") return `${base} ${trait} by nature.`;
-    return `${base} ${trait}，也${tonePhrase}。`;
+    if (data.language === "English") return `${base} ${trait}, quietly.`;
+    return polishSignature(`${base} ${trait}，${tonePhrase}。`);
   }
 
-  return base;
+  if (data.purpose === "表达当下心情") {
+    if (data.language === "English") return pick(["The weather inside remains unnamed.", "A quiet tide, not yet explained.", "Something soft survives the dark."], index);
+    return pick(["情绪交给夜晚，清醒留给明天。", "有些雾，不必急着散。", "今晚的月色，只适合沉默。"], index);
+  }
+
+  return polishSignature(base);
 }
 
 function createResultCard(item) {
@@ -240,7 +290,7 @@ fillDemo.addEventListener("click", () => {
   form.language.value = "中文";
   form.mbti.value = "INFJ";
   form.purpose.value = "隐藏一个名字";
-  form.tone.value = "高冷神秘";
+  form.tone.value = "含蓄留白";
   form.hiddenName.value = "林月";
   form.hideMethod.value = "藏头";
   form.philosophyLevel.value = "轻微参考";
@@ -249,6 +299,8 @@ fillDemo.addEventListener("click", () => {
 });
 
 renderEmptyState();
+
+
 
 
 
