@@ -108,10 +108,53 @@ function isLatinName(name) {
   return /^[a-z]+$/i.test(cleanHiddenName(name));
 }
 
-function buildHiddenLine(name, method, tone, index) {
+function isChineseSignatureLanguage(language) {
+  return ["中文", "古风中文", "中英混合"].includes(language);
+}
+
+function buildChineseInitialAcrostic(chars, index) {
+  const initialLines = {
+    A: ["安静处仍有回声", "暗处也留着一点光"],
+    B: ["不必把答案说尽", "半醒之间风声正好"],
+    C: ["春色未深，心事已远", "藏起锋芒，也藏起月光"],
+    D: ["灯影落下，夜色自明", "等风经过，不问归处"],
+    E: ["而沉默自有重量", "而月色仍旧偏冷"],
+    F: ["风经过时不解释", "浮光停在无人处"],
+    G: ["孤星不问人间", "光落下来，也不作声"],
+    H: ["海雾深处，有星微亮", "花影不语，月色自明"],
+    I: ["一念未明，雾色正深", "一场静默，抵过千言"],
+    J: ["旧梦不醒，风声很轻", "镜中月色，仍有余温"],
+    K: ["空山无答，夜色有声", "看见月光，也看见沉默"],
+    L: ["林深处，答案仍未命名", "落月无声，照见旧梦"],
+    M: ["明月不问归期", "梦醒时分，风仍很轻"],
+    N: ["南风不语，旧事成谜", "念起无声，月色微凉"],
+    O: ["偶有星光，落在暗处", "偶然沉默，也像回答"],
+    P: ["偏有月色，不肯落俗", "旁人不解，风自分明"],
+    Q: ["清醒藏在温柔之后", "青山不语，远意自来"],
+    R: ["人间很静，暗处有光", "若有回声，必在深处"],
+    S: ["深渊未必黑", "山色不言，心事自远"],
+    T: ["天光未亮，答案未醒", "停在雾里，也算自由"],
+    U: ["雾里有光，未必需名", "无声处，自有回响"],
+    V: ["微光不语，仍照暗处", "微雨过后，夜色更深"],
+    W: ["雾散之前，不必说明", "晚风无意，却懂沉默"],
+    X: ["星河低垂，旧梦不醒", "心事无声，月色有痕"],
+    Y: ["月亮不属于夜晚", "远山不语，答案未明"],
+    Z: ["在雾色里，答案不必说尽", "坠入月光，也坠入沉默"],
+  };
+
+  return chars
+    .map((char, charIndex) => pick(initialLines[char.toUpperCase()] || [`${char}藏在未说尽的地方`], index + charIndex))
+    .join("；");
+}
+
+function buildHiddenLine(name, method, tone, index, language) {
   if (!name) return null;
   const chars = [...cleanHiddenName(name)];
   const latin = isLatinName(name);
+
+  if (method === "藏头" && latin && isChineseSignatureLanguage(language)) {
+    return buildChineseInitialAcrostic(chars, index);
+  }
 
   if (method === "藏头" && !latin) {
     const endings = ["把月光收进口袋", "在沉默里慢慢发亮", "替风写下答案", "不必被所有人读懂"];
@@ -136,6 +179,11 @@ function buildHiddenExplanation(data, text) {
   if (!data.hiddenName) return "签名解释：没有设置隐藏名字。";
   const chars = [...cleanHiddenName(data.hiddenName)];
   const latin = isLatinName(data.hiddenName);
+
+  if (data.hideMethod === "藏头" && latin && isChineseSignatureLanguage(data.language)) {
+    const firstChars = text.split("；").map((part) => part.trim().charAt(0)).filter(Boolean);
+    return `签名解释：这是中文藏头。每个分句开头汉字为${firstChars.map((char) => `「${char}」`).join("、")}，它们的拼音首字母依次是 ${chars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
+  }
 
   if (data.hideMethod === "藏头" && !latin) {
     return `签名解释：每个分句开头依次是${chars.map((char) => `「${char}」`).join("、")}，连起来就是「${data.hiddenName}」。`;
@@ -181,7 +229,7 @@ function adaptSignature(base, data, philosophy, index) {
   }
 
   if (data.purpose === "隐藏一个名字" && data.hiddenName) {
-    return polishSignature(buildHiddenLine(data.hiddenName, data.hideMethod, data.tone, index) || base);
+    return polishSignature(buildHiddenLine(data.hiddenName, data.hideMethod, data.tone, index, data.language) || base);
   }
 
   if (data.purpose === "展示个人性格") {
@@ -305,6 +353,9 @@ fillDemo.addEventListener("click", () => {
 });
 
 renderEmptyState();
+
+
+
 
 
 
