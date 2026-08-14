@@ -10,14 +10,22 @@
 ];
 
 const mbtiProfiles = {
-  INFP: ["浪漫", "敏感", "理想主义", "想象力"],
+  ISTJ: ["可靠", "克制", "秩序感", "长期主义"],
+  ISFJ: ["温厚", "守护感", "细腻", "安稳"],
   INFJ: ["深度", "共情", "神秘", "温柔边界"],
   INTJ: ["冷静", "理性", "目标感", "独立"],
-  INTP: ["思辨", "抽离", "好奇", "清醒"],
-  ENFP: ["热烈", "自由", "明亮", "冒险"],
-  ENTJ: ["锋利", "野心", "掌控感", "笃定"],
-  ISFP: ["审美", "感受", "松弛", "当下"],
   ISTP: ["独立", "冷感", "行动派", "克制"],
+  ISFP: ["审美", "感受", "松弛", "当下"],
+  INFP: ["浪漫", "敏感", "理想主义", "想象力"],
+  INTP: ["思辨", "抽离", "好奇", "清醒"],
+  ESTP: ["直接", "冒险", "行动力", "不设限"],
+  ESFP: ["明亮", "热情", "松弛", "感染力"],
+  ENFP: ["热烈", "自由", "明亮", "冒险"],
+  ENTP: ["灵感", "反叛", "机智", "探索欲"],
+  ESTJ: ["笃定", "执行力", "清晰", "掌控感"],
+  ESFJ: ["亲和", "真诚", "连接感", "热心"],
+  ENFJ: ["理想", "鼓舞", "共情", "光感"],
+  ENTJ: ["锋利", "野心", "掌控感", "笃定"],
   未知: ["个人气质", "自然", "留白", "真实"],
 };
 
@@ -59,23 +67,56 @@ function choosePhilosophy(keywords, tone, index) {
   return pick(candidates.length ? candidates : philosophyLibrary, index);
 }
 
+function cleanHiddenName(name) {
+  return name.replace(/\s+/g, "");
+}
+
+function isLatinName(name) {
+  return /^[a-z]+$/i.test(cleanHiddenName(name));
+}
+
 function buildHiddenLine(name, method, tone, index) {
   if (!name) return null;
-  const chars = [...name.replace(/\s+/g, "")];
-  const isEnglish = /^[a-z]+$/i.test(name);
+  const chars = [...cleanHiddenName(name)];
+  const latin = isLatinName(name);
 
-  if (method === "藏头" && !isEnglish) {
+  if (method === "藏头" && !latin) {
     const endings = ["把月光收进口袋", "在沉默里慢慢发亮", "替风写下答案", "不必被所有人读懂"];
     return chars.map((char, charIndex) => `${char}${pick(endings, index + charIndex)}`).join("，");
   }
 
-  if (method === "首字母" || isEnglish) {
-    const words = { L: "Lost", U: "Under", N: "Never", A: "Always", M: "Moonlit", Y: "Young", E: "Echoes", R: "Rising" };
-    return chars.map((char) => words[char.toUpperCase()] || `${char.toUpperCase()}-lit`).join(" · ");
+  if (method === "首字母" || latin) {
+    const words = {
+      A: "Always", B: "Bravely", C: "Chasing", D: "Distant", E: "Echoes", F: "Finding", G: "Gentle", H: "Horizons",
+      I: "Inside", J: "Journey", K: "Keeping", L: "Light", M: "Moonlit", N: "Nights", O: "Open", P: "Paths",
+      Q: "Quiet", R: "Rising", S: "Softly", T: "Toward", U: "Unknown", V: "Velvet", W: "Wild", X: "Xanadu",
+      Y: "Young", Z: "Zephyrs",
+    };
+    return chars.map((char) => words[char.toUpperCase()] || char).join(" · ") + ".";
   }
 
   if (method === "谐音") return `把“${name}”藏进风声里，只让懂的人听见。`;
   return `以${pick(tonePhrases[tone] || tonePhrases.温柔清醒, index)}暗示“${name}”。`;
+}
+
+function buildHiddenExplanation(data, text) {
+  if (!data.hiddenName) return "签名解释：没有设置隐藏名字。";
+  const chars = [...cleanHiddenName(data.hiddenName)];
+  const latin = isLatinName(data.hiddenName);
+
+  if (data.hideMethod === "藏头" && !latin) {
+    return `签名解释：每个分句开头依次是${chars.map((char) => `「${char}」`).join("、")}，连起来就是「${data.hiddenName}」。`;
+  }
+
+  if (data.hideMethod === "首字母" || latin) {
+    return `签名解释：英文词首字母依次是 ${chars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
+  }
+
+  if (data.hideMethod === "谐音") {
+    return `签名解释：没有直接写出「${data.hiddenName}」，而是把名字伪装成“风声里能听见”的谐音线索。`;
+  }
+
+  return `签名解释：用「${text}」里的气质和意象暗示「${data.hiddenName}」，适合更隐晦的隐藏方式。`;
 }
 
 function adaptSignature(base, data, philosophy, index) {
@@ -149,6 +190,7 @@ function generateSignatures(data) {
     const base = pick(bases, index);
     const text = adaptSignature(base, data, philosophy, index);
     const hiddenMeta = data.hiddenName ? `隐藏说明：${data.hideMethod}隐藏“${data.hiddenName}”` : "隐藏说明：未设置隐藏名字";
+    const hiddenExplanation = buildHiddenExplanation(data, text);
     const philosophyMeta = data.philosophyLevel === "不需要" ? "哲学灵感：未启用" : `哲学灵感：${philosophy.author}「${philosophy.quote}」`;
 
     return {
@@ -160,6 +202,7 @@ function generateSignatures(data) {
         philosophyMeta,
         data.philosophyLevel === "不需要" ? "出处：—" : `出处：${philosophy.source}`,
         hiddenMeta,
+        hiddenExplanation,
       ],
     };
   });
@@ -206,4 +249,7 @@ fillDemo.addEventListener("click", () => {
 });
 
 renderEmptyState();
+
+
+
 
