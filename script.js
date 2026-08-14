@@ -213,7 +213,13 @@ function createResultCard(item) {
   });
 
   signature.textContent = item.text;
-  meta.innerHTML = item.meta.map((line) => `<span>${line}</span>`).join("");
+  meta.innerHTML = "";
+  item.meta.forEach((line) => {
+    const span = document.createElement("span");
+    span.className = line.startsWith("签名解释") ? "meta-line explanation-line" : "meta-line";
+    span.textContent = line;
+    meta.append(span);
+  });
 
   copyButton.addEventListener("click", async () => {
     try {
@@ -245,9 +251,9 @@ function generateSignatures(data) {
 
     return {
       text,
-      tags: [data.language, data.mbti, data.tone],
+      tags: [`签名：${data.language}`, data.mbti, data.tone],
       meta: [
-        `用途：${data.purpose}`,
+        `生成方向：${data.purpose}`,
         `MBTI 气质：${(mbtiProfiles[data.mbti] || mbtiProfiles.未知).join(" / ")}`,
         philosophyMeta,
         data.philosophyLevel === "不需要" ? "出处：—" : `出处：${philosophy.source}`,
@@ -299,6 +305,7 @@ fillDemo.addEventListener("click", () => {
 });
 
 renderEmptyState();
+
 
 
 
