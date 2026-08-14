@@ -109,7 +109,15 @@ function isLatinName(name) {
 }
 
 function isChineseSignatureLanguage(language) {
-  return ["中文", "古风中文", "中英混合"].includes(language);
+  return String(language).includes("中文");
+}
+
+function isAcrosticMethod(method) {
+  return String(method).includes("藏头");
+}
+
+function shouldUseChineseInitialAcrostic(name, method, language) {
+  return isLatinName(name) && isChineseSignatureLanguage(language) && isAcrosticMethod(method);
 }
 
 function buildChineseInitialAcrostic(chars, index) {
@@ -152,11 +160,11 @@ function buildHiddenLine(name, method, tone, index, language) {
   const chars = [...cleanHiddenName(name)];
   const latin = isLatinName(name);
 
-  if (method === "藏头" && latin && isChineseSignatureLanguage(language)) {
+  if (shouldUseChineseInitialAcrostic(name, method, language)) {
     return buildChineseInitialAcrostic(chars, index);
   }
 
-  if (method === "藏头" && !latin) {
+  if (isAcrosticMethod(method) && !latin) {
     const endings = ["把月光收进口袋", "在沉默里慢慢发亮", "替风写下答案", "不必被所有人读懂"];
     return chars.map((char, charIndex) => `${char}${pick(endings, index + charIndex)}`).join("，");
   }
@@ -180,12 +188,12 @@ function buildHiddenExplanation(data, text) {
   const chars = [...cleanHiddenName(data.hiddenName)];
   const latin = isLatinName(data.hiddenName);
 
-  if (data.hideMethod === "藏头" && latin && isChineseSignatureLanguage(data.language)) {
+  if (shouldUseChineseInitialAcrostic(data.hiddenName, data.hideMethod, data.language)) {
     const firstChars = text.split("；").map((part) => part.trim().charAt(0)).filter(Boolean);
     return `签名解释：这是中文藏头。每个分句开头汉字为${firstChars.map((char) => `「${char}」`).join("、")}，它们的拼音首字母依次是 ${chars.map((char) => char.toUpperCase()).join("-")}，对应隐藏名字「${data.hiddenName}」。`;
   }
 
-  if (data.hideMethod === "藏头" && !latin) {
+  if (isAcrosticMethod(data.hideMethod) && !latin) {
     return `签名解释：每个分句开头依次是${chars.map((char) => `「${char}」`).join("、")}，连起来就是「${data.hiddenName}」。`;
   }
 
@@ -353,6 +361,7 @@ fillDemo.addEventListener("click", () => {
 });
 
 renderEmptyState();
+
 
 
 
